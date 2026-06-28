@@ -20,8 +20,9 @@ RAW_REQUIRED_COLS = {
     "Stopped",
     "Start odometer (km)",
     "Distance (km)",
-    "Fuel consumption (litres)",
 }
+# Fuel column name differs between legacy exports ("litres") and split/updated files ("l")
+RAW_FUEL_COLS = {"Fuel consumption (litres)", "Fuel consumption (l)"}
 
 # Both the old DD/MM/YYYY HH:MM and new ISO YYYY-MM-DD HH:MM formats are valid
 DATE_PATTERN = re.compile(
@@ -80,6 +81,9 @@ def test_raw_required_columns(raw_file):
         header = set(csv.DictReader(f, delimiter=delim).fieldnames or [])
     missing = RAW_REQUIRED_COLS - header
     assert not missing, f"{raw_file.name}: missing columns {missing}"
+    assert header & RAW_FUEL_COLS, (
+        f"{raw_file.name}: missing fuel column — expected one of {RAW_FUEL_COLS}"
+    )
 
 
 def test_raw_date_format(raw_file):
