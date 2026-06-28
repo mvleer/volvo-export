@@ -1,0 +1,23 @@
+# Archived / superseded files
+archived/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# pytest
+.pytest_cache/
+
+# macOS
+.DS_Store
+
+# Raw personal data — not committed
+raw/
+
+# Generated output — regenerable from raw
+volvo-trips/
+
+# Excel files (dashboard, lock files)
+*.xlsx
+~$*
