@@ -10,6 +10,9 @@ against synthetic fixture data, then validates the result end-to-end.
 
 import subprocess
 import sys
+import csv
+import os
+import time
 from pathlib import Path
 
 import openpyxl
@@ -94,3 +97,84 @@ def test_pipeline_as_subprocess(tmp_path, raw_dir):
     assert result.returncode == 0, f"Script failed:\n{result.stderr}"
     year_files = list(tmp_path.glob("volvo-trips-*.xlsx"))
     assert len(year_files) > 0, "Subprocess produced no output files"
+
+
+# ---------------------------------------------------------------------------
+# Incremental regeneration — skip / regenerate based on mtime
+# ---------------------------------------------------------------------------
+
+def _write_year_raw(path: Path, year: int):
+    """Write a minimal per-year raw CSV (updated format) for mtime tests."""
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["Category", "Started", "Start odometer (km)", "Start address",
+                    "Stopped", "End odometer (km)", "End address", "Duration",
+                    "Distance (km)", "Fuel consumption (l)"])
+        w.writerow(["Unassigned", f"{year}-06-01 08:00", "100000", "A",
+                    f"{year}-06-01 08:30", "100020", "B", "30m", "20.0", "1.5"])
+
+
+def test_skip_when_xlsx_is_up_to_date(tmp_path):
+    """run_pipeline returns an empty dict when all XLSXs are newer than raw files."""
+    from volvo_trips_cleanup import run_pipeline
+
+    raw_dir = tmp_path / "raw"
+    raw_dir.mkdir()
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+
+    raw_file = raw_dir / "volvo-export-2025.csv"
+    _write_year_raw(raw_file, 2025)
+
+    # First run — creates the XLSX
+    run_pipeline(raw_dir, out_dir)
+
+    # Back-date the raw file so the XLSX is definitively newer
+    past = time.time() - 60
+    os.utime(raw_file, (past, past))
+
+    # Second run — should skip
+    written = run_pipeline(raw_dir, out_dir)
+    assert written == {}, "Expected no files written when XLSX is up to date"
+
+
+def test_regenerate_when_raw_is_newer(tmp_path):
+    """run_pipeline regenerates a year when its raw file is touched after the XLSX."""
+    from volvo_trips_cleanup import run_pipeline
+
+    raw_dir = tmp_path / "raw"
+    raw_dir.mkdir()
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+
+    raw_file = raw_dir / "volvo-export-2025.csv"
+    _write_year_raw(raw_file, 2025)
+    run_pipeline(raw_dir, out_dir)
+
+    # Advance raw file mtime to be newer than the XLSX
+    future = time.time() + 60
+    os.utime(raw_file, (future, future))
+
+    written = run_pipeline(raw_dir, out_dir)
+    assert 2025 in written, "Expected 2025 to be regenerated after raw file was updated"
+
+
+def test_force_regenerates_all(tmp_path):
+    """--force causes all years to be regenerated regardless of mtime."""
+    from volvo_trips_cleanup import run_pipeline
+
+    raw_dir = tmp_path / "raw"
+    raw_dir.mkdir()
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+
+    raw_file = raw_dir / "volvo-export-2025.csv"
+    _write_year_raw(raw_file, 2025)
+    run_pipeline(raw_dir, out_dir)
+
+    # Back-date raw so it looks stale — then force
+    past = time.time() - 60
+    os.utime(raw_file, (past, past))
+
+    written = run_pipeline(raw_dir, out_dir, force=True)
+    assert 2025 in written, "Expected 2025 to be regenerated with force=True"

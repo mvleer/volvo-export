@@ -203,7 +203,27 @@ def write_year_file(year: int, rows: list, output_dir: Path) -> Path:
     return outpath
 
 
-def run_pipeline(raw_dir: Path = RAW_DIR, output_dir: Path = OUTPUT_DIR) -> dict:
+def _year_needs_update(year: int, outpath: Path, raw_dir: Path) -> bool:
+    """Return True if *outpath* is missing or older than any raw file for *year*.
+
+    A raw file is considered a source for *year* when its stem contains exactly
+    that four-digit year (e.g. ``volvo-export-2025.csv``).  A raw file whose
+    stem contains no parseable year is treated conservatively as a source for
+    every year.
+    """
+    if not outpath.exists():
+        return True
+    xlsx_mtime = outpath.stat().st_mtime
+    for raw_file in raw_dir.glob("*.csv"):
+        m = re.search(r"\b(\d{4})\b", raw_file.stem)
+        if m is None or int(m.group(1)) == year:
+            if raw_file.stat().st_mtime > xlsx_mtime:
+                return True
+    return False
+
+
+def run_pipeline(raw_dir: Path = RAW_DIR, output_dir: Path = OUTPUT_DIR,
+                 force: bool = False) -> dict:
     raw_files = sorted(raw_dir.glob("*.csv"))
     if not raw_files:
         raise FileNotFoundError(f"No CSV files found in '{raw_dir}/'")
@@ -216,6 +236,9 @@ def run_pipeline(raw_dir: Path = RAW_DIR, output_dir: Path = OUTPUT_DIR) -> dict
     written = {}
     for year, year_rows in sorted(by_year.items()):
         outpath = output_dir / f"volvo-trips-{year}.xlsx"
+        if not force and not _year_needs_update(year, outpath, raw_dir):
+            print(f"Skipped {year} (up to date).")
+            continue
         overrides = load_category_overrides(outpath)
         if overrides:
             for row in year_rows:
@@ -235,5 +258,7 @@ if __name__ == "__main__":
                         help="Directory containing raw CSV exports (default: raw/)")
     parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR,
                         help="Directory to write per-year output files (default: .)")
+    parser.add_argument("--force", action="store_true",
+                        help="Regenerate all years even if XLSX is up to date")
     args = parser.parse_args()
-    run_pipeline(args.raw_dir, args.output_dir)
+    run_pipeline(args.raw_dir, args.output_dir, force=args.force)
