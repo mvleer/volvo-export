@@ -7,16 +7,18 @@ Cleans and archives Volvo app trip exports as per-year Excel workbooks, combinin
 The Volvo app's export window is limited — older trips cannot be re-exported. This pipeline treats every export as an immutable raw archive and regenerates clean, per-year output files on demand.
 
 ```
-raw/                              ← drop Volvo exports here (never modified)
-  volvo-export-2024oct-2025nov.csv
-  volvo-export-2025nov-dec.csv    ← add new exports as they come in
+raw/                         ← one file per year (never modified by the pipeline)
+  volvo-export-2024.csv
+  volvo-export-2025.csv
+  volvo-export-2026.csv      ← add new year files as they come in
 
-volvo-trips/                      ← generated output, one file per year
+volvo-trips/                 ← generated output, one file per year
   volvo-trips-2024.xlsx
   volvo-trips-2025.xlsx
+  volvo-trips-2026.xlsx
 ```
 
-Each run reads all files in `raw/` (auto-detecting `;` or `,` delimiters), deduplicates across overlapping exports, and writes one `volvo-trips-YYYY.xlsx` per year under `volvo-trips/`. Safe to re-run at any time.
+Each run reads all files in `raw/` (auto-detecting `;` or `,` delimiters), deduplicates across overlapping exports, and writes one `volvo-trips-YYYY.xlsx` per year under `volvo-trips/`. Years whose XLSX is already newer than the source raw file are skipped automatically.
 
 ## Usage
 
@@ -28,10 +30,11 @@ Drop the CSV from the Volvo app into `raw/` with a descriptive filename, then ru
 python volvo_trips_cleanup.py
 ```
 
-**Override directories:**
+**Override directories or force a full regeneration:**
 
 ```bash
 python volvo_trips_cleanup.py --raw-dir path/to/raw --output-dir path/to/output
+python volvo_trips_cleanup.py --force   # regenerate all years regardless of mtime
 ```
 
 **Run the test suite:**
@@ -54,7 +57,7 @@ pytest tests/ -m slow
 | `125,3 km` or `125.3 km` | `12.53` (÷10 correction, suffix removed, stored as float) |
 | `0,2 l` or `0.2 l` | `0.2` (suffix removed, stored as float) |
 | — | `Year` column added, e.g. `2026-1` |
-| — | `l/100km` column added (fuel ÷ distance × 100) |
+| — | `l/100km` column added (fuel ÷ odo delta × 100; odo delta is the ground-truth distance) |
 | — | `Odo delta (km)` column added (end − start odometer) |
 | `Column1`, `Title`, `User Notes` | Dropped |
 
