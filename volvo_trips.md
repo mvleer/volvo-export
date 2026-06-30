@@ -101,7 +101,7 @@ Each workbook has a single sheet called **trips** with the following columns:
 > **Why two distance columns?**
 > The Volvo app's Distance field has known inaccuracies in older export formats (up to ~11% short). `Odo delta (km)` is derived from the odometer readings, which are reliable, so `l/100km` is calculated using that column rather than Distance.
 
-These files are safe to delete and regenerate at any time.
+> **Before deleting these files:** any Category values you have assigned are stored inside them. Deleting a workbook permanently removes those annotations — they cannot be recovered on the next run. If you only want to force a rebuild, use `--force` instead of deleting.
 
 ---
 
