@@ -4,7 +4,7 @@
 
 The Volvo app lets you export your trip history as a CSV file, but only for a limited time window — older trips cannot be re-exported later. This tool takes those exports, cleans the data, removes duplicates, and produces one tidy Excel workbook per calendar year in `volvo-trips/`.
 
-You can drop in a new export at any time and re-run. Only years whose source file has changed are regenerated; the others are left untouched.
+You can drop in a new export at any time and re-run. Only years whose raw export file has changed are regenerated; the others are left untouched.
 
 ---
 
@@ -63,7 +63,7 @@ raw/volvo-export-2025.csv
 raw/volvo-export-2026.csv
 ```
 
-If an export spans more than one year (e.g. Oct 2024 – Nov 2025), the tool splits it into the correct year workbooks automatically during processing. You can keep the file as-is; no manual splitting is needed.
+If a raw export file spans more than one year (e.g. Oct 2024 – Nov 2025), the tool splits it into the correct trip workbooks automatically during processing. You can keep the raw export file as-is; no manual splitting is needed.
 
 **Overlapping exports are safe.** If two exports contain the same trip (same start time and start odometer reading), the duplicate is silently removed. You will never end up with the same trip counted twice.
 
@@ -101,7 +101,7 @@ Each workbook has a single sheet called **trips** with the following columns:
 > **Why two distance columns?**
 > The Volvo app's Distance field has known inaccuracies in older export formats (up to ~11% short). `Odo delta (km)` is derived from the odometer readings, which are reliable, so `l/100km` is calculated using that column rather than Distance.
 
-> **Before deleting these files:** any Category values you have assigned are stored inside them. Deleting a workbook permanently removes those annotations — they cannot be recovered on the next run. If you only want to force a rebuild, use `--force` instead of deleting.
+> **Before deleting trip workbooks:** any Category values you have assigned are stored inside them. Deleting a trip workbook permanently removes those annotations — they cannot be recovered on the next run. If you only want to force a rebuild, use `--force` instead of deleting.
 
 ---
 
@@ -109,7 +109,7 @@ Each workbook has a single sheet called **trips** with the following columns:
 
 The **Category** column starts as `Unassigned` for every trip. You can fill it in directly in Excel to tag trips (e.g. `Business`, `Holiday`, `Commute`).
 
-**Your annotations survive re-runs.** When the tool regenerates a year's workbook, it reads back any non-`Unassigned` Category values from the existing file before overwriting it, and re-applies them to the new output.
+**Your annotations survive re-runs.** When the tool regenerates a trip workbook, it reads back any non-`Unassigned` Category values from the existing trip workbook before overwriting it, and re-applies them to the new output.
 
 Workflow:
 1. Open `volvo-trips-2025.xlsx`
@@ -117,7 +117,7 @@ Workflow:
 3. Save and close the file
 4. Run the tool again — your categories are preserved
 
-> **Important:** close the Excel file before running the tool, otherwise the file is locked and the tool cannot update it.
+> **Important:** close the trip workbook in Excel before running the tool, otherwise the file is locked and the tool cannot update it.
 
 ---
 
@@ -131,7 +131,7 @@ python volvo_trips_cleanup.py [--raw-dir DIR] [--output-dir DIR] [--force]
 |---|---|---|
 | `--raw-dir` | `raw/` | Folder containing the Volvo CSV exports |
 | `--output-dir` | `volvo-trips/` | Folder where the Excel workbooks are written |
-| `--force` | off | Regenerate all year files even if they are already up to date |
+| `--force` | off | Regenerate all trip workbooks even if they are already up to date |
 
 ### Examples
 
@@ -162,10 +162,10 @@ python volvo_trips_cleanup.py --output-dir ~/Documents/volvo
 | Risk | Protection |
 |---|---|
 | Duplicate trips from overlapping exports | Deduplicated on (start time + start odometer) — each trip appears once |
-| Categories lost when re-running | Non-Unassigned Category values are read back from the existing XLSX before overwriting |
-| Unnecessary overwrites | Years whose XLSX is newer than the raw file are skipped |
+| Categories lost when re-running | Non-Unassigned Category values are read back from the existing trip workbook before overwriting |
+| Unnecessary overwrites | Years whose trip workbook is newer than the raw export file are skipped |
 | Accidental modification of raw exports | `raw/` is read-only — the tool never writes to it |
-| Mixed export formats in the same folder | Delimiter and date format are auto-detected per file |
+| Mixed export formats in the same folder | Delimiter and date format are auto-detected per raw export file |
 
 ---
 
@@ -175,10 +175,10 @@ python volvo_trips_cleanup.py --output-dir ~/Documents/volvo
 The `raw/` folder is empty or does not exist. Add your Volvo export CSV to it.
 
 **All years show "Skipped (up to date)"**
-The XLSX files are newer than the raw files. If you have genuinely updated a raw file, use `--force` to rebuild.
+The trip workbooks are newer than the raw export files. If you have genuinely updated a raw export file, use `--force` to rebuild.
 
 **Category annotations are gone after a re-run**
-The Excel file was open in Excel when the tool ran. Close it first, then re-run with `--force`.
+The trip workbook was open in Excel when the tool ran. Close it first, then re-run with `--force`.
 
-**The XLSX looks correct but a category did not come back**
-The start time or odometer reading in the raw file differs from what was in the old XLSX. This can happen if you manually edited the raw CSV. Run `--force` and re-enter the category.
+**The trip workbook looks correct but a category did not come back**
+The start time or odometer reading in the raw export file differs from what was in the old trip workbook. This can happen if you manually edited the raw export file. Run `--force` and re-enter the category.
