@@ -67,7 +67,7 @@ def test_pipeline_known_rows(output_dir):
 @pytest.mark.slow
 def test_pipeline_dedup_count(raw_dir, output_dir):
     """Total output rows must equal the unique natural key count across all raw files."""
-    from volvo_trips_cleanup import read_raw_files
+    from volvo_trips import read_raw_files
     raw_rows = read_raw_files(raw_dir)
     unique_count = len({(r["Started"], r["Start odometer (km)"]) for r in raw_rows})
 
@@ -83,11 +83,11 @@ def test_pipeline_dedup_count(raw_dir, output_dir):
 
 @pytest.mark.slow
 def test_pipeline_as_subprocess(tmp_path, raw_dir):
-    """Run volvo_trips_cleanup.py as a subprocess via CLI args."""
+    """Run volvo_trips.py as a subprocess via CLI args."""
     result = subprocess.run(
         [
             sys.executable,
-            str(PROJECT_ROOT / "volvo_trips_cleanup.py"),
+            str(PROJECT_ROOT / "volvo_trips.py"),
             "--raw-dir", str(raw_dir),
             "--output-dir", str(tmp_path),
         ],
@@ -116,7 +116,7 @@ def _write_year_raw(path: Path, year: int):
 
 def test_skip_when_xlsx_is_up_to_date(tmp_path):
     """run_pipeline returns an empty dict when all XLSXs are newer than raw files."""
-    from volvo_trips_cleanup import run_pipeline
+    from volvo_trips import run_pipeline
 
     raw_dir = tmp_path / "raw"
     raw_dir.mkdir()
@@ -140,7 +140,7 @@ def test_skip_when_xlsx_is_up_to_date(tmp_path):
 
 def test_regenerate_when_raw_is_newer(tmp_path):
     """run_pipeline regenerates a year when its raw file is touched after the XLSX."""
-    from volvo_trips_cleanup import run_pipeline
+    from volvo_trips import run_pipeline
 
     raw_dir = tmp_path / "raw"
     raw_dir.mkdir()
@@ -161,7 +161,7 @@ def test_regenerate_when_raw_is_newer(tmp_path):
 
 def test_force_regenerates_all(tmp_path):
     """--force causes all years to be regenerated regardless of mtime."""
-    from volvo_trips_cleanup import run_pipeline
+    from volvo_trips import run_pipeline
 
     raw_dir = tmp_path / "raw"
     raw_dir.mkdir()

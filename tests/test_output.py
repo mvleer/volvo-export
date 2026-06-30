@@ -56,7 +56,7 @@ def test_output_files_exist():
     files = _real_year_files()
     assert len(files) > 0, (
         "No volvo-trips-YYYY.xlsx files found in volvo-trips/. "
-        "Run: python volvo_trips_cleanup.py"
+        "Run: python volvo_trips.py"
     )
 
 
@@ -174,7 +174,7 @@ def test_year_boundary(year_file):
 
 def test_category_override_preserved(tmp_path):
     """Non-Unassigned Category values in an existing XLSX survive a re-run."""
-    from volvo_trips_cleanup import load_category_overrides, write_year_file, CANONICAL_HEADER
+    from volvo_trips import load_category_overrides, write_year_file, CANONICAL_HEADER
 
     rows = [
         {col: "" for col in CANONICAL_HEADER} | {
@@ -191,7 +191,7 @@ def test_category_override_preserved(tmp_path):
 
 def test_unassigned_category_not_preserved(tmp_path):
     """Unassigned rows are not included in overrides."""
-    from volvo_trips_cleanup import load_category_overrides, write_year_file, CANONICAL_HEADER
+    from volvo_trips import load_category_overrides, write_year_file, CANONICAL_HEADER
 
     rows = [
         {col: "" for col in CANONICAL_HEADER} | {
@@ -212,7 +212,7 @@ def test_category_override_int_odometer_roundtrip(tmp_path):
     Regression test: run_pipeline was building lookup keys with a raw int odometer
     while load_category_overrides stored str(odo), so the dict lookup always missed.
     """
-    from volvo_trips_cleanup import load_category_overrides, write_year_file, CANONICAL_HEADER
+    from volvo_trips import load_category_overrides, write_year_file, CANONICAL_HEADER
 
     odo = 115000  # int — exactly what clean_row writes into the row dict
     rows = [

@@ -21,7 +21,7 @@ def test_no_duplicate_trips(merged_rows):
 
 def test_unique_count_matches_raw(raw_dir, merged_rows):
     """Total merged rows must equal the number of unique natural keys across all raw files."""
-    from volvo_trips_cleanup import read_raw_files
+    from volvo_trips import read_raw_files
     raw_rows = read_raw_files(raw_dir)
     raw_unique_keys = {(r["Started"], r["Start odometer (km)"]) for r in raw_rows}
     assert len(merged_rows) == len(raw_unique_keys), (

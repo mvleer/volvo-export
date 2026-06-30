@@ -114,14 +114,14 @@ def raw_dir(tmp_path):
 @pytest.fixture
 def merged_rows(raw_dir):
     """Merged, deduplicated, sorted rows — result of the pipeline merge step."""
-    from volvo_trips_cleanup import merge_and_dedup, read_raw_files
+    from volvo_trips import merge_and_dedup, read_raw_files
     return merge_and_dedup(read_raw_files(raw_dir))
 
 
 @pytest.fixture
 def output_dir(tmp_path, raw_dir):
     """Run the full pipeline against fixture data; return the output directory."""
-    from volvo_trips_cleanup import run_pipeline
+    from volvo_trips import run_pipeline
     out = tmp_path / "output"
     out.mkdir()
     run_pipeline(raw_dir, out)

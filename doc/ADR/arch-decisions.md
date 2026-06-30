@@ -129,7 +129,7 @@ intervention.
 the workspace root.
 
 **Rationale:** Placing output files in the root directory mixed generated
-artifacts with source files (`volvo_trips_cleanup.py`, `pytest.ini`, etc.),
+artifacts with source files (`volvo_trips.py`, `pytest.ini`, etc.),
 making the workspace harder to navigate. A dedicated `volvo-trips/` directory
 makes the distinction between source, raw data, and output explicit. The
 directory is created automatically by the pipeline if it does not exist.

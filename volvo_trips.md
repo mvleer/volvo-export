@@ -26,7 +26,7 @@ raw/
 **3. Run the tool:**
 
 ```bash
-python volvo_trips_cleanup.py
+python volvo_trips.py
 ```
 
 **4. Open the result:**
@@ -124,7 +124,7 @@ Workflow:
 ## Command-line options
 
 ```
-python volvo_trips_cleanup.py [--raw-dir DIR] [--output-dir DIR] [--force]
+python volvo_trips.py [--raw-dir DIR] [--output-dir DIR] [--force]
 ```
 
 | Option | Default | Description |
@@ -137,22 +137,22 @@ python volvo_trips_cleanup.py [--raw-dir DIR] [--output-dir DIR] [--force]
 
 **Run with default folders:**
 ```bash
-python volvo_trips_cleanup.py
+python volvo_trips.py
 ```
 
 **Use a different raw folder (e.g. exports on a shared drive):**
 ```bash
-python volvo_trips_cleanup.py --raw-dir /Volumes/Shared/volvo-exports
+python volvo_trips.py --raw-dir /Volumes/Shared/volvo-exports
 ```
 
 **Force a full rebuild after manually editing a raw file:**
 ```bash
-python volvo_trips_cleanup.py --force
+python volvo_trips.py --force
 ```
 
 **Write output to a different location:**
 ```bash
-python volvo_trips_cleanup.py --output-dir ~/Documents/volvo
+python volvo_trips.py --output-dir ~/Documents/volvo
 ```
 
 ---

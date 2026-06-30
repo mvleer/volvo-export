@@ -27,14 +27,14 @@ Each run reads all files in `raw/` (auto-detecting `;` or `,` delimiters), dedup
 Drop the CSV from the Volvo app into `raw/` with a descriptive filename, then run:
 
 ```bash
-python volvo_trips_cleanup.py
+python volvo_trips.py
 ```
 
 **Override directories or force a full regeneration:**
 
 ```bash
-python volvo_trips_cleanup.py --raw-dir path/to/raw --output-dir path/to/output
-python volvo_trips_cleanup.py --force   # regenerate all years regardless of mtime
+python volvo_trips.py --raw-dir path/to/raw --output-dir path/to/output
+python volvo_trips.py --force   # regenerate all years regardless of mtime
 ```
 
 **Run the test suite:**
@@ -70,7 +70,7 @@ pytest tests/ -m slow
 ## Project layout
 
 ```
-volvo_trips_cleanup.py   Pipeline script
+volvo_trips.py   Pipeline script
 raw/                     Immutable raw exports from the Volvo app
 volvo-trips/             Generated per-year XLSX workbooks
 tests/
